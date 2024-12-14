@@ -1,6 +1,7 @@
+import { CloseOutlined } from "@ant-design/icons";
 import React, { useRef } from "react";
 
-const Modal = ({
+export const Modal = ({
   setEditState,
   editState,
   isOpen,
@@ -31,7 +32,7 @@ const Modal = ({
         left: 0,
         width: "100%",
         height: "100%",
-        background: "rgba(32, 0, 102, 0.6)",
+        background: "rgba(10, 10, 10, 0.8)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -41,7 +42,7 @@ const Modal = ({
         <div
           style={{
             background:
-              "linear-gradient(90deg, rgb(162, 4, 252), rgb(105, 101, 223))",
+            "linear-gradient(-70deg, rgb(144, 144, 144), rgb(72, 72, 72))",
             width: "clamp(400px, 40%, 600px)",
             margin: "auto",
             padding: "2%",
@@ -60,7 +61,7 @@ const Modal = ({
               }}
               style={{ color: "white", cursor: "pointer" }}
             >
-              х
+              <CloseOutlined />
             </h1>
           </div>
           <div
@@ -89,7 +90,7 @@ const Modal = ({
                 className="dataEntry"
                 placeholder={"Введите описание задачи"}
                 value={idesc}
-                style={{ resize: "vertical", minHeight:"40px" }}
+                style={{ resize: "vertical", minHeight: "40px" }}
                 ref={ref}
                 rows={1}
                 onInput={handleInput}
@@ -107,5 +108,3 @@ const Modal = ({
     </div>
   );
 };
-
-export default Modal;

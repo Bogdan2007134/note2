@@ -1,22 +1,22 @@
-import { useEffect, useRef, useState } from "react";
 import "./App.css";
-import { DeleteFilled, EditFilled } from "@ant-design/icons";
+import { useEffect, useRef, useState } from "react";
 
-import Modal from "./modal";
+import { Modal } from "./modal";
 import { loadANotes, setANotes } from "./AStorage";
+import { ListNote } from "./ListNote";
+import { ItemNotes } from "./ItemNotes";
 
 function App() {
   const [start, setStart] = useState(true);
   const [open, setOpen] = useState(false);
   const [ititle, setTitle] = useState("");
   const [idesc, setDesc] = useState("");
-  const [listHeight, setListHeight] = useState("auto");
+
   const [editState, setEditState] = useState(false);
   const [editId, setEditId] = useState(0);
 
-  const noteListRef = useRef(null);
-
   const [notes, setNotes] = useState([]);
+  const [note, setNote] = useState({});
 
   const handleClose = () => {
     setOpen(false);
@@ -41,6 +41,34 @@ function App() {
     }
   };
 
+  const _setDesc = (title, desc, id) => {
+    const newTask = {
+      id: id,
+      title: title,
+      desc: desc,
+    };
+    setNote(newTask);
+
+
+    setNotes((prevNotes) => {
+      setANotes(prevNotes.map((note) => (note.id === id ? newTask : note)));
+      return prevNotes.map((note) => (note.id === id ? newTask : note));
+    });
+  };
+  const _setTitle = (title, desc, id) => {
+    const newTask = {
+      id: id,
+      title: title,
+      desc: desc,
+    };
+    setNote(newTask);
+
+    setNotes((prevNotes) => {
+      setANotes(prevNotes.map((note) => (note.id === id ? newTask : note)));
+      return prevNotes.map((note) => (note.id === id ? newTask : note));
+    });
+  };
+
   const addTask = () => {
     const newTask = {
       id: editState ? editId : Date.now(),
@@ -50,8 +78,8 @@ function App() {
 
     setNotes((prevNotes) => {
       if (!editState) {
-        setANotes([...prevNotes, newTask]);
-        return [...prevNotes, newTask];
+        setANotes([newTask, ...prevNotes]);
+        return [newTask, ...prevNotes];
       } else {
         setANotes(
           prevNotes.map((note) => (note.id === editId ? newTask : note))
@@ -73,12 +101,6 @@ function App() {
       fetch();
       setStart(false);
     }
-    if (noteListRef.current) {
-      setListHeight(`${notes.length * 250}px`);
-    }
-    if (!notes.length) {
-      setListHeight(`${2 * 250}px`);
-    }
   }, [notes]);
 
   return (
@@ -95,46 +117,22 @@ function App() {
         addTask={addTask}
       />
       <div className="Frame-main">
-        <div className="header">
-          <h1 className="title-notes">Заметки</h1>
-          <h1 className="add-notes" onClick={() => setOpen(true)}>
-            +
-          </h1>
-        </div>
-        <div
-          ref={noteListRef}
-          style={{ minHeight: listHeight }}
-          className="noteList"
-        >
-          {notes.length && notes ? (
-            notes.map((note) => {
-              return (
-                <div key={note.id} id={note.id} className="noteItem">
-                  <div className="text-div">
-                    <h1>{note.title}</h1>
-                    <h2>{note.desc}</h2>
-                  </div>
-                  <div className="options-div">
-                    <DeleteFilled
-                      style={{
-                        fontSize: "40px",
-                        margin: 5,
-                        color: "rgb(255,60,6)",
-                      }}
-                      onClick={() => removeNote(note.id)}
-                    />
-                    <EditFilled
-                      style={{ fontSize: "40px", margin: 5, color: "" }}
-                      onClick={() => openEditNote(note.id)}
-                    />
-                  </div>
-                </div>
-              );
-            })
-          ) : (
-            <h1 style={{ color: "white" }}>Пусто</h1>
-          )}
-        </div>
+        <ListNote
+          notes={notes}
+          setNote={setNote}
+          openEditNote={openEditNote}
+          removeNote={removeNote}
+          setOpen={setOpen}
+          note={note}
+        />
+        <ItemNotes
+          key={note.id}
+          note={note}
+          openEditNote={openEditNote}
+          removeNote={removeNote}
+          setDesc={_setDesc}
+          setTitle={_setTitle}
+        />
       </div>
     </div>
   );
