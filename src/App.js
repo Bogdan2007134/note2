@@ -5,8 +5,10 @@ import { Modal } from "./modal";
 import { loadANotes, setANotes } from "./AStorage";
 import { ListNote } from "./ListNote";
 import { ItemNotes } from "./ItemNotes";
+import { theme } from "antd";
 
 function App() {
+  const [style, setStyle] = useState("spisedWine");
   const [start, setStart] = useState(true);
   const [open, setOpen] = useState(false);
   const [ititle, setTitle] = useState("");
@@ -22,6 +24,45 @@ function App() {
     setOpen(false);
   };
 
+  const changeThemeDark = () => {
+    const themes = [
+      "toastedCaramel",
+      "oliveHarvest",
+      "spisedWine",
+      "spruce",
+      "midnight",
+      "lavender",
+    ];
+    for (let color = 0; color < themes.length; color++) {
+      const nowColor = themes[color];
+      if (nowColor === style) {
+        if (color + 1 < themes.length) {
+          setStyle(themes[color + 1]);
+          return;
+        } else {
+          setStyle(themes[0]);
+          return;
+        }
+      }
+    }
+    setStyle(themes[0]);
+  };
+  const changeThemeLight = () => {
+    const themes = ["paleBlue", "blush", "beige"];
+    for (let color = 0; color < themes.length; color++) {
+      const nowColor = themes[color];
+      if (nowColor === style) {
+        if (color + 1 < themes.length) {
+          setStyle(themes[color + 1]);
+          return;
+        } else {
+          setStyle(themes[0]);
+          return;
+        }
+      }
+    }
+    setStyle(themes[0]);
+  };
   const openEditNote = (id) => {
     setOpen(true);
     setEditId(id);
@@ -35,6 +76,7 @@ function App() {
     if (noteToRemove) {
       noteToRemove.classList.add("removing");
       setTimeout(() => {
+        setNote({});
         setNotes((prevNotes) => prevNotes.filter((note) => note.id !== id));
         setANotes(notes.filter((note) => note.id !== id));
       }, 300);
@@ -48,7 +90,6 @@ function App() {
       desc: desc,
     };
     setNote(newTask);
-
 
     setNotes((prevNotes) => {
       setANotes(prevNotes.map((note) => (note.id === id ? newTask : note)));
@@ -104,7 +145,7 @@ function App() {
   }, [notes]);
 
   return (
-    <div className="App">
+    <div className={`App ${style}`}>
       <Modal
         setEditState={setEditState}
         editState={editState}
@@ -116,8 +157,11 @@ function App() {
         setDesc={setDesc}
         addTask={addTask}
       />
-      <div className="Frame-main">
+      <div className={`Frame-main ${style}`}>
         <ListNote
+          changeThemeLight={changeThemeLight}
+          changeThemeDark={changeThemeDark}
+          style={style}
           notes={notes}
           setNote={setNote}
           openEditNote={openEditNote}
@@ -126,6 +170,7 @@ function App() {
           note={note}
         />
         <ItemNotes
+          style={style}
           key={note.id}
           note={note}
           openEditNote={openEditNote}

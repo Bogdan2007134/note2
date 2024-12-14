@@ -1,11 +1,11 @@
 import "./App.css";
 
-export const ItemNotes = ({ note, setTitle, setDesc }) => {
+export const ItemNotes = ({ note, setTitle, setDesc, style }) => {
   return (
     <div key={note.id} id={note.id} className="noteItem">
       <div style={{ display: "flex", flexDirection: "column" }}>
         <textarea
-          className="title-note"
+          className={`title-note ${style}`}
           value={note.title}
           multiple
           onChange={(e) => {
@@ -15,14 +15,13 @@ export const ItemNotes = ({ note, setTitle, setDesc }) => {
           }}
         />
         <textarea
-          className="desc-note"
+          className={`desc-note ${style}`}
           value={note.desc}
           onChange={(e) => {
             setDesc(note.title, e.target.value, note.id);
           }}
         />
       </div>
-      {/* <div className="options-div"></div> */}
     </div>
   );
 };

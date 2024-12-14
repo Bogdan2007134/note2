@@ -7,12 +7,20 @@ export const ListNote = ({
   removeNote,
   setOpen,
   note,
-  setNote
+  setNote,
+  style,
+  changeThemeDark,
+  changeThemeLight,
 }) => {
   return (
     <>
-      <div className="Frame-list">
-        <HeaderBar setOpen={setOpen} />
+      <div className={`Frame-list ${style}`}>
+        <HeaderBar
+          setOpen={setOpen}
+          style={style}
+          changeThemeDark={changeThemeDark}
+          changeThemeLight={changeThemeLight}
+        />
 
         {notes.length && notes ? (
           notes.map((_note) => {
@@ -24,16 +32,12 @@ export const ListNote = ({
                 removeNote={removeNote}
                 setNote={setNote}
                 active={_note.id === note.id ? true : false}
+                style={style}
               />
             );
           })
         ) : (
-          <div
-            style={{
-              color: "white",
-              marginLeft: "30px",
-            }}
-          >
+          <div className={style}>
             <h2>Пусто</h2>
           </div>
         )}
