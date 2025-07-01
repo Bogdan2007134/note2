@@ -1,0 +1,7 @@
+.ListNote__list {
+  display: flex;
+  flex-direction: column;
+  width: clamp(250px, 90%, 500px);
+
+  overflow-y: scroll;
+}

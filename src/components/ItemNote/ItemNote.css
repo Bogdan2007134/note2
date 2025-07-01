@@ -1,0 +1,78 @@
+.noteList__ItemNotes {
+    page-break-inside: avoid;
+    break-inside: avoid;
+    background: rgba(0, 0, 0, 0.05);
+    width: 80%;
+    min-width: 280px;
+    border-radius: 20px;
+    margin-top: 20px;
+    padding: 40px;
+    display: flex;
+    display: inline-block;
+    justify-content: space-between;
+    flex-direction: column;
+
+}
+
+.noteList__ItemNotes.removing {
+    transform: translateY(100px);
+    opacity: 0;
+}
+
+.noteList__title-note {
+    font-size: 33px;
+    border-width: 0px;
+    padding: 5px;
+    border-radius: 10px;
+    background: linear-gradient(170deg, rgba(50, 50, 50, 0.1), rgba(222, 184, 135, 0.0) 45%);
+
+
+    outline: none;
+    resize: none;
+}
+
+
+.noteList__desc-note {
+
+    margin-top: 30px;
+    font-size: 25px;
+    border-width: 0px;
+    height: 75vh;
+    padding: 5px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(50, 50, 50, 0.1), rgba(222, 184, 135, 0.0) 45%);
+    outline: none;
+    resize: none;
+}
+
+.noteList__text-areas {
+    display: flex;
+    flex-direction: column;
+    animation: 0.2s show;
+}
+
+
+@keyframes show {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.noteList__empty-note {
+    font-size: 33px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+    transition: all 0.4s;
+
+}
+
+.noteList__empty-note.removing {
+    opacity: 0;
+}

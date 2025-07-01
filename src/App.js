@@ -1,74 +1,63 @@
 import "./App.css";
 import { useEffect, useRef, useState } from "react";
 
-import { Modal } from "./modal";
-import { loadANotes, setANotes } from "./AStorage";
-import { ListNote } from "./ListNote";
-import { ItemNotes } from "./ItemNotes";
-import { theme } from "antd";
+import { setANotes } from "./hooks/AStorage";
+import { ListNote } from "./components/ListNote/ListNote";
+import { ItemNote } from "./components/ItemNote/ItemNote";
+import { useLocalStorage } from "@uidotdev/usehooks";
+
+import NotesClass from "./tools/NotesClass";
+import CategoryClass from "./tools/CategoryClass";
 
 function App() {
   const [style, setStyle] = useState("spisedWine");
-  const [start, setStart] = useState(true);
-  const [open, setOpen] = useState(false);
+  const [Category, setCategory] = useState({
+    name: "Все",
+    id: "all",
+    priority: false,
+  });
   const [ititle, setTitle] = useState("");
   const [idesc, setDesc] = useState("");
 
-  const [editState, setEditState] = useState(false);
-  const [editId, setEditId] = useState(0);
-
-  const [notes, setNotes] = useState([]);
   const [note, setNote] = useState({});
+  const [notes, setNotes] = useLocalStorage("Notes", []);
+  const cursor = useRef({ title: -1, desc: -1 });
+  const darkThemes = [
+    "toastedCaramel",
+    "oliveHarvest",
+    "spisedWine",
+    "spruce",
+    "midnight",
+    "lavender",
+  ];
+  const lightThemes = ["paleBlue", "blush", "beige"];
 
-  const handleClose = () => {
-    setOpen(false);
+  function changeThemeDark() {
+    const currentIndex = darkThemes.findIndex((theme) => theme === style);
+    const nextIndex = (currentIndex + 1) % darkThemes.length;
+    setStyle(darkThemes[nextIndex]);
+  }
+  function changeThemeLight() {
+    const currentIndex = lightThemes.findIndex((theme) => theme === style);
+    const nextIndex = (currentIndex + 1) % lightThemes.length;
+    setStyle(lightThemes[nextIndex]);
+  }
+
+  const updateAllNotes = (var_notes) => {
+    setANotes(var_notes);
+    setNotes(var_notes);
   };
 
-  const changeThemeDark = () => {
-    const themes = [
-      "toastedCaramel",
-      "oliveHarvest",
-      "spisedWine",
-      "spruce",
-      "midnight",
-      "lavender",
-    ];
-    for (let color = 0; color < themes.length; color++) {
-      const nowColor = themes[color];
-      if (nowColor === style) {
-        if (color + 1 < themes.length) {
-          setStyle(themes[color + 1]);
-          return;
-        } else {
-          setStyle(themes[0]);
-          return;
-        }
-      }
+  const openNote = (id) => {
+    const emptyText = document.getElementById("emptyText");
+    if (emptyText) {
+      emptyText.classList.add("removing");
     }
-    setStyle(themes[0]);
-  };
-  const changeThemeLight = () => {
-    const themes = ["paleBlue", "blush", "beige"];
-    for (let color = 0; color < themes.length; color++) {
-      const nowColor = themes[color];
-      if (nowColor === style) {
-        if (color + 1 < themes.length) {
-          setStyle(themes[color + 1]);
-          return;
-        } else {
-          setStyle(themes[0]);
-          return;
-        }
-      }
-    }
-    setStyle(themes[0]);
-  };
-  const openEditNote = (id) => {
-    setOpen(true);
-    setEditId(id);
-    setEditState(true);
-    setTitle(notes.filter((note) => note.id === id)[0].title);
-    setDesc(notes.filter((note) => note.id === id)[0].desc);
+
+    const cash_note = notes.find((note) => note.id === id);
+    setTitle(cash_note.title);
+    setDesc(cash_note.desc);
+    setNote(cash_note);
   };
 
   const removeNote = (id) => {
@@ -76,107 +65,97 @@ function App() {
     if (noteToRemove) {
       noteToRemove.classList.add("removing");
       setTimeout(() => {
+        const finishTasks = notes.filter((note) => note.id !== id);
         setNote({});
-        setNotes((prevNotes) => prevNotes.filter((note) => note.id !== id));
-        setANotes(notes.filter((note) => note.id !== id));
+        updateAllNotes(finishTasks);
       }, 300);
     }
   };
 
-  const _setDesc = (title, desc, id) => {
-    const newTask = {
-      id: id,
-      title: title,
-      desc: desc,
-    };
-    setNote(newTask);
-
-    setNotes((prevNotes) => {
-      setANotes(prevNotes.map((note) => (note.id === id ? newTask : note)));
-      return prevNotes.map((note) => (note.id === id ? newTask : note));
-    });
-  };
-  const _setTitle = (title, desc, id) => {
-    const newTask = {
-      id: id,
-      title: title,
-      desc: desc,
-    };
-    setNote(newTask);
-
-    setNotes((prevNotes) => {
-      setANotes(prevNotes.map((note) => (note.id === id ? newTask : note)));
-      return prevNotes.map((note) => (note.id === id ? newTask : note));
-    });
-  };
-
   const addTask = () => {
     const newTask = {
-      id: editState ? editId : Date.now(),
-      title: ititle,
-      desc: idesc,
+      id: Date.now(),
+      title: "",
+      desc: "Накалякать сюда",
+      category_id: Category.id,
+      active: false,
     };
+    const finishTasks = [newTask, ...notes];
+    setTitle(newTask.title);
+    setDesc(newTask.desc);
+    setNote(newTask);
+    updateAllNotes(finishTasks);
+  };
 
-    setNotes((prevNotes) => {
-      if (!editState) {
-        setANotes([newTask, ...prevNotes]);
-        return [newTask, ...prevNotes];
-      } else {
-        setANotes(
-          prevNotes.map((note) => (note.id === editId ? newTask : note))
-        );
-        return prevNotes.map((note) => (note.id === editId ? newTask : note));
+  const handleActiveNote = (id) => {
+    let count = 0;
+    const _notes = [...notes];
+    for (let index = 0; index < notes.length; index++) {
+      const element = notes[index];
+      if (element.id === id) {
+        break;
       }
-    });
-    setEditState(false);
-    handleClose();
-    setDesc("");
+      count++;
+    }
+    if (notes[count].active) {
+      _notes[count].active = false;
+    } else {
+      _notes[count].active = true;
+    }
+    updateAllNotes(_notes);
+  };
+  const handleCategory = (item) => {
+    setCategory(item);
     setTitle("");
-    setEditId(0);
+    setDesc("");
+    setNote({});
+  };
+  const updateNotes = () => {
+    if (notes.length > 0) {
+      const newTask = {
+        id: note.id,
+        title: ititle,
+        desc: idesc,
+        category_id: note.category_id,
+
+        active: note.active,
+      };
+
+      const _notes = [...notes];
+      const finishTasks = _notes.map((_note) =>
+        _note.id === note.id ? newTask : _note
+      );
+      setNote(newTask);
+      updateAllNotes(finishTasks);
+    }
   };
   useEffect(() => {
-    const fetch = async () => {
-      await loadANotes(setNotes);
-    };
-    if (start) {
-      fetch();
-      setStart(false);
-    }
-  }, [notes]);
-
+    updateNotes();
+    // eslint-disable-next-line
+  }, [ititle, idesc, Category]);
   return (
     <div className={`App ${style}`}>
-      <Modal
-        setEditState={setEditState}
-        editState={editState}
-        isOpen={open}
-        onClose={handleClose}
-        ititle={ititle}
-        setTitle={setTitle}
-        idesc={idesc}
-        setDesc={setDesc}
-        addTask={addTask}
-      />
       <div className={`Frame-main ${style}`}>
         <ListNote
+          Category={Category}
+          setCategory={handleCategory}
           changeThemeLight={changeThemeLight}
           changeThemeDark={changeThemeDark}
           style={style}
           notes={notes}
-          setNote={setNote}
-          openEditNote={openEditNote}
+          openNote={openNote}
           removeNote={removeNote}
-          setOpen={setOpen}
+          addTask={addTask}
           note={note}
+          handleActiveNote={handleActiveNote}
         />
-        <ItemNotes
+        <ItemNote
           style={style}
-          key={note.id}
           note={note}
-          openEditNote={openEditNote}
-          removeNote={removeNote}
-          setDesc={_setDesc}
-          setTitle={_setTitle}
+          openNote={openNote}
+          setDesc={setDesc}
+          setTitle={setTitle}
+          cursor={cursor}
         />
       </div>
     </div>
